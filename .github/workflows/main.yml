@@ -1,1 +1,38 @@
+name: Pipeline CI/CD projet m1meldinodeapp
+on:
+  push:
+    branches:
+      - main
 
+env:
+  IMAGE_NAME: td-app:latest
+
+jobs:
+  test:
+    name: test
+    runs-on: ubuntu-latest
+    steps: 
+    
+      - name: recupérer le code source
+        uses: actions/checkout@v4
+
+      - name: lancer les tests
+        run: ls -lah
+    
+  build:
+    needs: test
+    name: build 
+    runs-on: ubuntu-latest
+    steps: 
+    
+      - name: recupérer le code source
+        uses: actions/checkout@v4
+
+      - name: build de l'image docker
+        run: docker build -t ${{env.IMAGE_NAME}} .
+
+      - name: run l'image docker
+        run: docker run -d -p 3000:3000 ${{env.IMAGE_NAME}}
+
+      - name: tester le conteneur docker
+        run: "curl  127.0.0.1:3000"

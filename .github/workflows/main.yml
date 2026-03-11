@@ -46,18 +46,34 @@ jobs:
       - name: push de l'image latest
         run: docker push ${{ env.REPO }}/${{ github.actor }}/${{ env.IMAGE_NAME }}:latest
 
-        deploy:
-    needs: build
-    name: deploy sur EC2
-    runs-on: ubuntu-latest
-    steps:
-    - name: connexion au vps sur aws
-      uses: appleboy/ssh-action@v1.0.3  
-      with:
+  deploy:
+      needs: build
+      name: deploy sur EC2
+      runs-on: ubuntu-latest
+      steps:
+      - name: connexion a GHCR
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REPO }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.TOKENCICD }}
+      - name: récupération de l'image dernière version sur GHCR
+        run: "docker pull ${{ env.REPO }}/${{ github.actor }}/${{ env.IMAGE_NAME }}:latest "
+
+      - name: exécuter l'image docker
+        run: "docker run -d -p 3000:3000 --name ${{ env.IMAGE_NAME }} ${{ env.REPO }}/${{ github.actor }}/${{ env.IMAGE_NAME }}:latest"
+      
+      - name: connexion au vps avec ssh
+        uses: appleboy/ssh-action@v1.0.3
+        with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USER }}
           key: ${{ secrets.KEY }}
           script: |
-           pwd 
-           
+            pwd
+            # docker stop ${{ env.IMAGE_NAME }}
+            # docker rm ${{ env.IMAGE_NAME }}
+            # docker rmi ${{ env.REPO }}/${{ github.actor }}/${{ env.IMAGE_NAME }}:latest
+            # docker run -d --name ${{ env.IMAGE_NAME }} -p 8080:3000 ${{ env.REPO }}/${{ github.actor }}/${{ env.IMAGE_NAME }}:latest
+
     

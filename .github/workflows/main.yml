@@ -70,8 +70,15 @@ jobs:
           username: ${{ secrets.USER }}
           key: ${{ secrets.KEY }}
           script: |
-            echo ${{ secrets.tOKENCICD }} 
-            docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            # Arrêter et supprimer l'ancien conteneur si existant
+            docker stop ${{ env.IMAGE_NAME }} || true
+            docker rm ${{ env.IMAGE_NAME }} || true
+
+            # Supprimer l'ancienne image
+            docker rmi ${{ env.REPO }}/${{ github.actor }}/${{ env.IMAGE_NAME }}:latest || true
+
+            # Récupérer la nouvelle image
             docker pull ${{ env.REPO }}/${{ github.actor }}/${{ env.IMAGE_NAME }}:latest
-            docker run -d -p 3000:3000 --name ${{ env.IMAGE_NAME }} ${{ env.REPO }}/${{ github.actor }}/${{ env.IMAGE_NAME }}:latest
-            curl -X GET http://localhost:3000
+
+            # Lancer le conteneur
+            docker run -d --name ${{ env.IMAGE_NAME }} -p 3000:3000 ${{ env.REPO }}/${{ github.actor }}/${{ env.IMAGE_NAME }}:latest

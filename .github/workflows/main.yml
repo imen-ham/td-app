@@ -33,14 +33,14 @@ jobs:
         run: docker build -t ${{env.IMAGE_NAME}} .
 
       - name: run l'image docker
-      
+
         run: docker run -d -p 3000:3000 ${{env.IMAGE_NAME}}
 
       - name: taguer en version courante 
         run: "docker tag ${{env.IMAGE_NAME}} ${{env.REPO}}/${{ github.actor }}/${{env.IMAGE_NAME}}"
       - name: taguer en version latest
         run: "docker tag ${{env.IMAGE_NAME}} ${{env.REPO}}/${{ github.actor }}/${{env.IMAGE_NAME}}"
-        name : connexion a GHCR
+      - name : connexion a GHCR
         uses: docker/login-action@v2
         with:
           registry: ${{env.REPO}}

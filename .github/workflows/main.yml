@@ -45,3 +45,19 @@ jobs:
 
       - name: push de l'image latest
         run: docker push ${{ env.REPO }}/${{ github.actor }}/${{ env.IMAGE_NAME }}:latest
+
+        deploy:
+    needs: build
+    name: deploy sur EC2
+    runs-on: ubuntu-latest
+    steps:
+    - name: connexion au vps sur aws
+      uses: appleboy/ssh-action@v1.0.3  
+      with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USER }}
+          key: ${{ secrets.KEY }}
+          script: |
+           pwd 
+           
+    
